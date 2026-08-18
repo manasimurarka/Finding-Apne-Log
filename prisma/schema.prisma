@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Completion {
+  NEW
+  BASIC_COMPLETE
+  ENRICHED
+}
+
+model User {
+  id           String     @id @default(cuid())
+  username     String     @unique
+  passwordHash String
+  isSeed       Boolean    @default(false)
+  completion   Completion @default(NEW)
+  createdAt    DateTime   @default(now())
+  profile      Profile?
+  sessions     Session[]
+  sentInvites  Invitation[] @relation("sent")
+  receivedInvites Invitation[] @relation("received")
+  messages     Message[]
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Profile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName    String
+  metro          String
+  interests      String[]
+  availability   String
+  goals          String
+  connectionMode String
+  hometown       String
+  country        String
+  birthDate      DateTime
+  gender         String
+  moveDate       DateTime
+  matchDocument  String
+  embedding      Json?
+  visibility     Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model FindQuery {
+  id        String   @id @default(cuid())
+  userId    String
+  text      String
+  createdAt DateTime @default(now())
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  BLOCKED
+}
+
+model Invitation {
+  id           String           @id @default(cuid())
+  fromId       String
+  toId         String
+  from         User             @relation("sent", fields: [fromId], references: [id], onDelete: Cascade)
+  to           User             @relation("received", fields: [toId], references: [id], onDelete: Cascade)
+  note         String           @db.VarChar(400)
+  safeReason   String
+  status       InvitationStatus @default(PENDING)
+  conversation Conversation?
+  createdAt    DateTime         @default(now())
+  @@unique([fromId, toId])
+}
+
+model Conversation {
+  id           String     @id @default(cuid())
+  invitationId String     @unique
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  messages     Message[]
+  createdAt    DateTime   @default(now())
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  body           String       @db.VarChar(2000)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+  @@unique([blockerId, blockedId])
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  reporterId String
+  targetId   String
+  reason     String
+  createdAt  DateTime @default(now())
+}
