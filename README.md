@@ -1,101 +1,92 @@
 # Finding Apne Log
 
-Finding Apne Log helps immigrants and people who are new to a city find community through shared interests, goals, and availability.
+**Find your people, wherever you are.**
 
-Moving somewhere new can make it hard to find the people who feel like your people. This project creates a calmer, consent-first way to meet others, whether someone is looking for a tennis partner, a cafe companion, a language-exchange group, an online friend, or simply a familiar community in a new place.
+Finding Apne Log is an AI-assisted community matching app designed for immigrants and people building a life in a new city.
 
-## What it does
+Instead of swiping through profiles, users describe the kind of connection they are looking for — a tennis partner, someone from a similar background, a new friend, or simply people with shared interests — and the system recommends relevant people based on profile context and semantic similarity.
 
-1. Create an account and complete a profile with interests, connection preferences, availability, hometown, and move-to-the-US context.
-2. Choose which profile details other members can see.
-3. Use **Find people** to describe a connection in everyday language.
-4. Receive text-first suggestions based on shared interests, goals, availability, location, and online or in-person preferences.
-5. Send an invitation with an optional note.
-6. The recipient decides whether to accept, decline, block, or report the request. A two-way chat opens only after acceptance.
+## How it works
 
-## Built for privacy and consent
+1. Create an account and complete a profile with interests, location, availability, connection preferences, and background.
+2. Choose which profile information other users are allowed to see.
+3. Use **Find People** to describe who you would like to meet in natural language.
+4. Featherless AI generates embeddings for the request and user matching context.
+5. The backend filters eligible profiles and ranks them using semantic similarity and shared interests.
+6. Send an invitation to someone you would like to connect with.
+7. A private chat opens only after the other person accepts.
 
-Finding Apne Log does not use photos or swipe mechanics to decide who is worth meeting. It is designed around context, choice, and mutual consent.
+The app also supports blocking and reporting, and private matching information is never exposed directly to other users.
 
-- Members control visibility for hometown, country, interests, availability, connection type, and goals.
-- Date of birth, gender, move date, raw profile answers, matching documents, and embeddings remain private.
-- Match explanations use only information a member chose to show.
-- Invitations are one-way until the recipient accepts.
-- Chats are available only to the two people in an accepted connection.
-- Members can block or report others from matches, invitations, and conversations.
+## How it is different
 
-## How the matching is agentic
+Most dating, friend-finding, and social networking apps start with profiles: users browse people, judge limited information, and decide who to message.
 
-The matching workflow uses an AI-assisted retrieval layer instead of a fixed list of profiles:
+Finding Apne Log starts with **intent** instead.
 
-- The server creates a private matching document from profile context.
-- Featherless embeddings turn that context and each Find people request into semantic vectors.
-- Postgres with pgvector retrieves relevant completed profiles while excluding blocked and reported pairs.
-- The app ranks possible connections using semantic relevance, shared activity interests, connection mode, and availability.
-- The browser receives only a sanitized profile preview and a safe explanation. It never receives embeddings, raw matching context, or private profile fields.
+A user can simply say what they need in that moment — someone to play badminton with, people from a familiar cultural background, a friend nearby, or someone with a particular shared interest — and the system searches for people who may actually fit that context.
 
-This makes the experience different from Tinder, Bumble BFF, and typical friend-finder apps. The goal is not to judge a photo in seconds. It is to help people find a useful, comfortable, and mutually wanted connection based on what they are actually looking for.
+The goal is not to maximize swipes or profile views. It is to make introductions feel more intentional, relevant, and mutually wanted.
 
-## Local setup
+## Tech Stack
 
-1. Install dependencies:
+* Next.js 16
+* React + TypeScript
+* Tailwind CSS
+* Prisma
+* PostgreSQL on Render
+* Featherless AI embeddings
+* Render / Vercel deployment support
 
-   ```bash
-   npm install
-   ```
+## Sponsor Integrations
 
-2. Copy `.env.example` to `.env.local` and set the required values:
+**Featherless AI**
+Used to generate semantic embeddings for user profiles and natural-language people searches.
 
-   ```bash
-   DATABASE_URL=
-   FEATHERLESS_API_KEY=
-   FEATHERLESS_BASE_URL=https://api.featherless.ai/v1
-   FEATHERLESS_CHAT_MODEL=
-   FEATHERLESS_EMBEDDING_MODEL=Qwen/Qwen3-Embedding-0.6B
-   APP_URL=http://localhost:3000
-   SESSION_SECRET=
-   ```
+**Render**
+Used for PostgreSQL infrastructure and application deployment configuration.
 
-3. Enable pgvector in the Postgres database and apply the schema:
+## Run Locally
 
-   ```sql
-   CREATE EXTENSION IF NOT EXISTS vector;
-   ```
+Install dependencies:
 
-   ```bash
-   npx prisma db push --schema prisma/schema.prisma
-   ```
+```bash
+npm install
+```
 
-4. Run the app:
+Copy `.env.example` to `.env.local` and configure:
 
-   ```bash
-   npm run dev
-   ```
+```env
+DATABASE_URL=
+FEATHERLESS_API_KEY=
+FEATHERLESS_BASE_URL=https://api.featherless.ai/v1
+FEATHERLESS_CHAT_MODEL=Qwen/Qwen2.5-7B-Instruct
+FEATHERLESS_EMBEDDING_MODEL=Qwen/Qwen3-Embedding-0.6B
+APP_URL=http://localhost:3000
+SESSION_SECRET=
+```
 
-5. Validate before deployment:
+Set up the database:
 
-   ```bash
-   npm run typecheck
-   npm run build
-   ```
+```bash
+npx prisma generate --schema prisma/schema.prisma
+npx prisma db push --schema prisma/schema.prisma
+```
 
-## Deploying safely
+Start the app:
 
-Keep all secrets out of Git. `.env` and `.env.local` are ignored by this repository.
+```bash
+npm run dev
+```
 
-For a Vercel deployment, add `DATABASE_URL`, `FEATHERLESS_API_KEY`, `FEATHERLESS_BASE_URL`, `FEATHERLESS_CHAT_MODEL`, `FEATHERLESS_EMBEDDING_MODEL`, `APP_URL`, and `SESSION_SECRET` in Vercel Project Settings under Environment Variables. Do not use a `NEXT_PUBLIC_` prefix for any of them.
+Then open:
 
-When Vercel connects to Render Postgres, use the Render external database URL. Use a separate database for Vercel preview deployments when possible so test deployments do not access production member data.
+```text
+http://localhost:3000
+```
 
-## Tech stack
+## Project Context
 
-- Next.js 16 and TypeScript
-- Tailwind CSS
-- Prisma and Render Postgres with pgvector
-- Featherless OpenAI-compatible embeddings
-- Server-side username/password authentication with HttpOnly session cookies
-- Vercel or Render for deployment
+Finding Apne Log was originally built around the **Open Atlas AI for Social Good Hackathon 2026** challenge space, exploring how AI could help newcomers build meaningful community and find the people they need in a new place.
 
-## Hackathon context
-
-Built for the Open Atlas Data for Social Good Hackathon as a community-focused, platonic connection tool for immigrants and people building a new life in the United States.
+The current repository preserves the working MVP as a foundation for future development.
