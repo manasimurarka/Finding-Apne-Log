@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: finding-apne-log
+    runtime: node
+    buildCommand: npm ci && npx prisma generate --schema prisma/schema.prisma && npx prisma db push --schema prisma/schema.prisma && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase: { name: apne-db, property: connectionString }
+      - key: FEATHERLESS_API_KEY
+        sync: false
+      - key: FEATHERLESS_BASE_URL
+        value: https://api.featherless.ai/v1
+      - key: FEATHERLESS_CHAT_MODEL
+        value: Qwen/Qwen2.5-7B-Instruct
+      - key: FEATHERLESS_EMBEDDING_MODEL
+        value: Qwen/Qwen3-Embedding-0.6B
+      - key: APP_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+databases:
+  - name: apne-db
+    plan: basic-256mb
